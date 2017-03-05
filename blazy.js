@@ -231,7 +231,8 @@
                             }
                         // or background-image
                         } else {
-                            ele.style.backgroundImage = 'url("' + src + '")';
+
+                            ele.style.backgroundImage = 'url("' + getFitImageUrl(ele, src) + '")';
                         }
                         itemLoaded(ele, options);
                         unbindEvent(img, 'load', onLoadHandler);
@@ -309,6 +310,31 @@
 
     function removeAttr(ele, attr){
         ele.removeAttribute(attr); 
+    }
+
+    function getFitImageUrl(ele, _default) {
+        var bsSrc = getAttr(ele, 'data-bs-srcset');
+        if (!bsSrc) {
+            return _default;
+        }
+        bsSrc = JSON.parse(bsSrc);
+        if (!bsSrc || !bsSrc.sizes) {
+            return _default;
+        }
+
+        var sortedSizes = Object.keys(bsSrc.sizes).sort(),
+            elSize      = ele.offsetWidth,
+            size;
+
+        for (var i = 0; i < sortedSizes.length; i++) {
+            size = parseInt(sortedSizes[ i ]);
+
+            if (size >= elSize) {
+                return bsSrc.baseurl+bsSrc.sizes[ size ];
+            }
+        }
+
+        return _default;
     }
 
     function equal(ele, str) {
