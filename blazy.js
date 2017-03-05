@@ -278,6 +278,10 @@
         each(options.breakpoints, function(object) {
             removeAttr(ele, object.src);
         });
+
+        if(typeof options.itemLoaded === 'function' ) {
+            options.itemLoaded.call(ele, options);
+        }
     }
 
     function handleSource(ele, attr, dataAttr) {
