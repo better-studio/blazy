@@ -208,6 +208,14 @@
                 var dataSrcSplitted = dataSrc.split(options.separator);
                 var src = dataSrcSplitted[_isRetina && dataSrcSplitted.length > 1 ? 1 : 0];
                 var srcset = getAttr(ele, options.srcset);
+
+                var newSrc = getFitImageUrl(ele, false);
+
+                if(newSrc) {
+                    srcset = undefined;
+                    src    = newSrc;
+                }
+                
                 var isImage = equal(ele, 'img');
                 var parent = ele.parentNode;
                 var isPicture = parent && equal(parent, 'picture');
@@ -232,7 +240,7 @@
                         // or background-image
                         } else {
 
-                            ele.style.backgroundImage = 'url("' + getFitImageUrl(ele, src) + '")';
+                            ele.style.backgroundImage = 'url("' + src + '")';
                         }
                         itemLoaded(ele, options);
                         unbindEvent(img, 'load', onLoadHandler);
@@ -309,9 +317,14 @@
     }
 
     function removeAttr(ele, attr){
-        ele.removeAttribute(attr); 
+        ele.removeAttribute(attr);
     }
-
+    function isRetinaDisplay() {
+        if (window.matchMedia) {
+            var mq = window.matchMedia("only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen  and (min-device-pixel-ratio: 1.3), only screen and (min-resolution: 1.3dppx)");
+            return (mq && mq.matches || (window.devicePixelRatio > 1));
+        }
+    }
     function getFitImageUrl(ele, _default) {
         var bsSrc = getAttr(ele, 'data-bs-srcset');
         if (!bsSrc) {
@@ -322,15 +335,17 @@
             return _default;
         }
 
-        var sortedSizes = Object.keys(bsSrc.sizes).sort(),
-            elSize      = ele.offsetWidth,
+        var elSize = ele.offsetWidth,
             size;
 
-        for (var i = 0; i < sortedSizes.length; i++) {
-            size = parseInt(sortedSizes[ i ]);
+        if(isRetinaDisplay()) {
+            elSize *= 2;
+        }
 
-            if (size >= elSize) {
-                return bsSrc.baseurl+bsSrc.sizes[ size ];
+        for (size in bsSrc.sizes) {
+
+            if (parseInt(size) >= elSize) {
+                return bsSrc.baseurl + bsSrc.sizes[ size ];
             }
         }
 
